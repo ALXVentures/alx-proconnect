@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+:root {
+  /* Ink surfaces */
+  --ink: #12151c;
+  --ink-2: #1a1f29;
+  --ink-3: #232a37;
+  --ink-line: #2c3341;
+
+  /* Paper surfaces (form / admin contexts) */
+  --paper: #f3f2ec;
+  --paper-2: #e9e7dc;
+  --paper-line: #d8d5c6;
+
+  /* Text */
+  --text-hi: #f4f3ee;
+  --text-lo: #a3aab8;
+  --text-ink: #1c2026;
+  --text-ink-lo: #5b6270;
+
+  /* Accents */
+  --brass: #c89b3c;
+  --brass-hi: #e0b862;
+  --teal: #2f6f62;
+  --teal-hi: #3f8c7c;
+  --rose: #b3563f;
+
+  --font-display: var(--font-fraunces);
+  --font-body: var(--font-inter);
+  --font-mono: var(--font-plex-mono);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-line: var(--ink-line);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-line: var(--paper-line);
+  --color-text-hi: var(--text-hi);
+  --color-text-lo: var(--text-lo);
+  --color-text-ink: var(--text-ink);
+  --color-text-ink-lo: var(--text-ink-lo);
+  --color-brass: var(--brass);
+  --color-brass-hi: var(--brass-hi);
+  --color-teal: var(--teal);
+  --color-teal-hi: var(--teal-hi);
+  --color-rose: var(--rose);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--ink);
+  color: var(--text-hi);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--brass);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brass-hi);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display), ui-serif, Georgia, serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+.ledger-rule {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--ink-line) 0px,
+    var(--ink-line) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+  width: 1px;
+}
+
+.paper .ledger-rule {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--paper-line) 0px,
+    var(--paper-line) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
