@@ -16,7 +16,7 @@ export default function Home() {
           ALX <span className="text-brass-hi">ProConnect</span>
         </div>
         <nav className="font-mono text-xs tracking-wide text-text-lo flex items-center gap-6">
-          <span className="hidden sm:inline">Freelancer Academy</span>
+          <span className="hidden sm:inline">Freelancer Sign In</span>
           <Link
             href="/recruiters/login"
             className="text-text-hi hover:text-teal-hi transition-colors"
