@@ -1,21 +1,35 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
+import { createServiceClient } from "@/lib/supabase/server";
+import { RECRUITER_COOKIE } from "@/lib/constants";
 import { DirectoryGrid, type Talent } from "@/components/DirectoryGrid";
-import { SignOutButton } from "@/components/SignOutButton";
+import { SwitchRecruiterButton } from "@/components/SwitchRecruiterButton";
 
 export default async function DirectoryPage() {
-  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const recruiterId = cookieStore.get(RECRUITER_COOKIE)?.value;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/recruiters/login?next=/directory");
+  if (!recruiterId) {
+    redirect("/recruiters?next=/directory");
   }
 
-  const [{ data: talents }, { data: recruiter }, { data: requests }] = await Promise.all([
+  const supabase = createServiceClient();
+
+  // Real DB check — the cookie only says "this browser claims to be
+  // recruiter X"; a missing row (e.g. purged by the 3-year inactivity job,
+  // or a stale cookie from a wiped database) sends them back to re-enter.
+  const { data: recruiter } = await supabase
+    .from("recruiters")
+    .select("id, full_name, company")
+    .eq("id", recruiterId)
+    .maybeSingle();
+
+  if (!recruiter) {
+    redirect("/recruiters?next=/directory");
+  }
+
+  const [{ data: talents }, { data: requests }] = await Promise.all([
     supabase
       .from("talents")
       .select(
@@ -23,8 +37,7 @@ export default async function DirectoryPage() {
       )
       .eq("status", "published")
       .order("created_at", { ascending: false }),
-    supabase.from("recruiters").select("full_name, company").eq("id", user.id).single(),
-    supabase.from("intro_requests").select("talent_id").eq("recruiter_id", user.id),
+    supabase.from("intro_requests").select("talent_id").eq("recruiter_id", recruiter.id),
   ]);
 
   const talentsWithUrls: Talent[] = (talents || []).map((t) => ({
@@ -43,12 +56,10 @@ export default async function DirectoryPage() {
           ALX <span className="text-teal-hi">ProConnect</span>
         </Link>
         <div className="flex items-center gap-5 font-mono text-xs text-text-lo">
-          {recruiter && (
-            <span className="hidden sm:inline">
-              {recruiter.full_name} · {recruiter.company}
-            </span>
-          )}
-          <SignOutButton />
+          <span className="hidden sm:inline">
+            {recruiter.full_name} · {recruiter.company}
+          </span>
+          <SwitchRecruiterButton />
         </div>
       </header>
 

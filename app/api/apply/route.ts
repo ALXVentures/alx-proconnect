@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createServiceClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity";
 
 const MAX_HEADSHOT_BYTES = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"];
@@ -115,6 +116,12 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    await logActivity({
+      actorType: "talent",
+      actorEmail: data.email,
+      action: "profile_submitted",
+    });
 
     return NextResponse.json({ ok: true });
   } catch {

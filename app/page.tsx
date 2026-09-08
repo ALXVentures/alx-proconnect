@@ -16,12 +16,12 @@ export default function Home() {
           ALX <span className="text-brass-hi">ProConnect</span>
         </div>
         <nav className="font-mono text-xs tracking-wide text-text-lo flex items-center gap-6">
-          <span className="hidden sm:inline">Freelancer Sign In</span>
+          <span className="hidden sm:inline">Freelancer Academy</span>
           <Link
-            href="/recruiters/login"
+            href="/recruiters"
             className="text-text-hi hover:text-teal-hi transition-colors"
           >
-            Recruiter sign in
+            Browse talent
           </Link>
         </nav>
       </header>
@@ -62,7 +62,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_1px_1fr]">
           {/* Recruiter door */}
           <Link
-            href="/recruiters/register"
+            href="/recruiters"
             className="group relative px-6 md:px-10 py-16 flex flex-col justify-between hover:bg-ink-2 transition-colors"
           >
             <div>
@@ -119,7 +119,9 @@ export default function Home() {
       <footer className="border-t border-ink-line mt-auto">
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col sm:flex-row gap-3 justify-between font-mono text-[11px] text-text-lo">
           <span>ALX ProConnect — built by the FLA program team</span>
-          <span>Profiles reviewed before they go live</span>
+          <Link href="/remove-me" className="hover:text-brass-hi transition-colors">
+            Request profile removal
+          </Link>
         </div>
       </footer>
     </main>

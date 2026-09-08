@@ -4,6 +4,78 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Image from "next/image";
 
+export type TakedownRequest = {
+  id: string;
+  email: string;
+  message: string | null;
+  created_at: string;
+};
+
+export function TakedownQueue({ requests }: { requests: TakedownRequest[] }) {
+  if (requests.length === 0) {
+    return (
+      <p className="font-mono text-sm text-text-lo py-10 text-center border border-dashed border-ink-line rounded-lg">
+        No pending removal requests.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {requests.map((r) => (
+        <TakedownCard key={r.id} request={r} />
+      ))}
+    </div>
+  );
+}
+
+function TakedownCard({ request }: { request: TakedownRequest }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  const ageDays = Math.floor(
+    (Date.now() - new Date(request.created_at).getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const urgent = ageDays >= 25;
+
+  async function resolve() {
+    setBusy(true);
+    await fetch("/api/admin/takedown", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ request_id: request.id, email: request.email }),
+    });
+    router.refresh();
+  }
+
+  return (
+    <div className="bg-ink-2 border border-ink-line rounded-xl p-5 flex flex-col md:flex-row md:items-center gap-4">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-3">
+          <span className="font-mono text-sm">{request.email}</span>
+          <span
+            className={`font-mono text-[10px] uppercase px-2 py-0.5 rounded ${
+              urgent ? "bg-rose/20 text-rose" : "bg-ink text-text-lo"
+            }`}
+          >
+            Day {ageDays} of 30
+          </span>
+        </div>
+        {request.message && (
+          <p className="mt-1 text-sm text-text-lo">{request.message}</p>
+        )}
+      </div>
+      <button
+        onClick={resolve}
+        disabled={busy}
+        className="font-mono text-xs uppercase tracking-wide rounded-md px-5 py-2.5 bg-brass text-ink hover:bg-brass-hi transition-colors disabled:opacity-50 shrink-0"
+      >
+        {busy ? "Removing…" : "Mark removed"}
+      </button>
+    </div>
+  );
+}
+
 export type PendingTalent = {
   id: string;
   full_name: string;

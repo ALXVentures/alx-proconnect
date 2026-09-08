@@ -1,44 +1,21 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { RECRUITER_COOKIE } from "@/lib/constants";
 
-export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+// Cheap presence check only — this runs on the edge, so it doesn't hit the
+// database. The real check (does this recruiter id still exist in
+// Postgres?) happens server-side in app/directory/page.tsx, which redirects
+// back here if the cookie turns out to be stale.
+export function proxy(request: NextRequest) {
+  const hasRecruiterCookie = request.cookies.has(RECRUITER_COOKIE);
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const isDirectory = request.nextUrl.pathname.startsWith("/directory");
-
-  if (isDirectory && !user) {
+  if (!hasRecruiterCookie) {
     const url = request.nextUrl.clone();
-    url.pathname = "/recruiters/login";
+    url.pathname = "/recruiters";
     url.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {

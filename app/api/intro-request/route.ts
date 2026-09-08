@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createServiceClient } from "@/lib/supabase/server";
+import { logActivity } from "@/lib/activity";
+import { RECRUITER_COOKIE } from "@/lib/constants";
 
 const Schema = z.object({ talent_id: z.string().uuid() });
 
 export async function POST(req: Request) {
-  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const recruiterId = cookieStore.get(RECRUITER_COOKIE)?.value;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!recruiterId) {
+    return NextResponse.json({ error: "Please enter your email first." }, { status: 401 });
   }
 
   const body = await req.json().catch(() => null);
@@ -21,24 +21,37 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  // RLS (auth.uid() = recruiter_id) enforces that this insert can only ever
-  // be attributed to the signed-in recruiter — no need to trust the client.
+  const supabase = createServiceClient();
+
+  const { data: recruiter } = await supabase
+    .from("recruiters")
+    .select("id, work_email")
+    .eq("id", recruiterId)
+    .maybeSingle();
+
+  if (!recruiter) {
+    return NextResponse.json({ error: "Please enter your email again." }, { status: 401 });
+  }
+
   const { error } = await supabase.from("intro_requests").insert({
-    recruiter_id: user.id,
+    recruiter_id: recruiter.id,
     talent_id: parsed.data.talent_id,
   });
 
-  if (error) {
-    if (error.code === "23505") {
-      // Already requested — treat as success, it's idempotent from the UI's view.
-      return NextResponse.json({ ok: true, already: true });
-    }
+  if (error && error.code !== "23505") {
     return NextResponse.json({ error: "Could not send request." }, { status: 500 });
   }
 
-  // Roadmap (V2): trigger an automated email to the recruiter with the
-  // talent's contact details once the FLA team approves the request, per
-  // the ProConnect data-flow doc. V1 logs the request for manual follow-up.
+  await logActivity({
+    actorType: "recruiter",
+    actorEmail: recruiter.work_email,
+    action: "intro_request",
+    metadata: { talent_id: parsed.data.talent_id },
+  });
+
+  // Roadmap (next step): this is where the on-screen profile view,
+  // send-to-email / download-PDF options, and the immediate notification
+  // email to the Talent get wired in.
 
   return NextResponse.json({ ok: true });
 }
