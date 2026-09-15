@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { ScoreMeter } from "./ScoreMeter";
 
 export type Talent = {
@@ -20,10 +21,10 @@ export type Talent = {
 
 export function DirectoryGrid({
   talents,
-  requestedIds,
+  viewedIds,
 }: {
   talents: Talent[];
-  requestedIds: Set<string>;
+  viewedIds: Set<string>;
 }) {
   const [query, setQuery] = useState("");
   const [skill, setSkill] = useState("all");
@@ -74,7 +75,7 @@ export function DirectoryGrid({
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((t) => (
-            <TalentCard key={t.id} talent={t} alreadyRequested={requestedIds.has(t.id)} />
+            <TalentCard key={t.id} talent={t} alreadyViewed={viewedIds.has(t.id)} />
           ))}
         </div>
       )}
@@ -82,32 +83,7 @@ export function DirectoryGrid({
   );
 }
 
-function TalentCard({
-  talent,
-  alreadyRequested,
-}: {
-  talent: Talent;
-  alreadyRequested: boolean;
-}) {
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
-    alreadyRequested ? "sent" : "idle"
-  );
-
-  async function requestIntro() {
-    setStatus("sending");
-    try {
-      const res = await fetch("/api/intro-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ talent_id: talent.id }),
-      });
-      if (!res.ok) throw new Error();
-      setStatus("sent");
-    } catch {
-      setStatus("error");
-    }
-  }
-
+function TalentCard({ talent, alreadyViewed }: { talent: Talent; alreadyViewed: boolean }) {
   return (
     <div className="bg-ink-2 border border-ink-line rounded-xl p-5 flex flex-col">
       <div className="flex items-center gap-3">
@@ -152,42 +128,12 @@ function TalentCard({
         <ScoreMeter value={talent.showcase_score} tone="teal" compact />
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        {talent.portfolio_url && (
-          <a
-            href={talent.portfolio_url}
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-[11px] underline underline-offset-2 text-text-lo hover:text-teal-hi"
-          >
-            Portfolio
-          </a>
-        )}
-        {talent.linkedin_url && (
-          <a
-            href={talent.linkedin_url}
-            target="_blank"
-            rel="noreferrer"
-            className="font-mono text-[11px] underline underline-offset-2 text-text-lo hover:text-teal-hi"
-          >
-            LinkedIn
-          </a>
-        )}
-      </div>
-
-      <button
-        onClick={requestIntro}
-        disabled={status === "sending" || status === "sent"}
-        className="mt-5 w-full font-mono text-xs uppercase tracking-wide rounded-md py-2.5 transition-colors bg-teal text-text-hi hover:bg-teal-hi disabled:opacity-60 disabled:cursor-default"
+      <Link
+        href={`/directory/${talent.id}`}
+        className="mt-5 w-full text-center font-mono text-xs uppercase tracking-wide rounded-md py-2.5 transition-colors bg-teal text-text-hi hover:bg-teal-hi"
       >
-        {status === "sent"
-          ? "Intro requested ✓"
-          : status === "sending"
-          ? "Sending…"
-          : status === "error"
-          ? "Try again"
-          : "Request intro"}
-      </button>
+        {alreadyViewed ? "View profile again" : "View full profile"}
+      </Link>
     </div>
   );
 }

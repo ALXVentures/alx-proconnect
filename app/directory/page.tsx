@@ -47,7 +47,7 @@ export default async function DirectoryPage() {
       : null,
   }));
 
-  const requestedIds = new Set((requests || []).map((r) => r.talent_id));
+  const viewedIds = new Set((requests || []).map((r) => r.talent_id));
 
   return (
     <main className="flex-1 bg-ink text-text-hi">
@@ -74,7 +74,7 @@ export default async function DirectoryPage() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 md:px-10 pb-24">
-        <DirectoryGrid talents={talentsWithUrls} requestedIds={requestedIds} />
+        <DirectoryGrid talents={talentsWithUrls} viewedIds={viewedIds} />
       </div>
     </main>
   );

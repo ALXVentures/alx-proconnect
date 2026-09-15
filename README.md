@@ -78,8 +78,8 @@ extra fields.
 1. Push this repo to GitHub (a private repo is fine; Vercel just needs read access).
 2. On [vercel.com](https://vercel.com), **New Project → Import** the repo.
 3. Framework preset auto-detects Next.js — no changes needed.
-4. Under **Environment Variables**, add the same three variables
-   from `.env.local`.
+4. Under **Environment Variables**, add all the variables
+   from `.env.local`, including the Resend ones below.
 5. Deploy. No Supabase Auth URL configuration needed — there's no
    magic-link redirect to worry about since recruiters and Talent never
    hold a Supabase session.
@@ -89,6 +89,29 @@ worth knowing: Hobby's terms of service are scoped to non-commercial,
 personal use — ALX isn't charging recruiters or applicants, so this should
 be fine, but it's worth keeping in mind if the product ever adds paid
 placements.
+
+## 5. Set up email (Resend)
+
+The "notify Talent" and "send to my email" features need a real email
+provider — Supabase doesn't send arbitrary transactional email.
+
+1. Sign up at [resend.com](https://resend.com) (free tier: 3,000
+   emails/month, 100/day — plenty for V1).
+2. **Settings → API Keys → Create API Key**, copy it into
+   `RESEND_API_KEY`.
+3. **Important limitation:** until you verify a domain, Resend only lets
+   you send *to your own account email* — every other recipient gets a
+   403. That means Talent notifications and "send to my email" will
+   silently fail (logged, not crashing the app) for anyone but you during
+   testing.
+4. To actually notify real Talent and recruiters, verify a domain:
+   **Domains → Add Domain** — use a subdomain you control (e.g.
+   `mail.alxproconnect.com`, or whatever ALX's IT/legal decides fits the
+   data-hosting-region conversation from earlier). Add the SPF/DKIM DNS
+   records Resend gives you, wait for verification, then set
+   `EMAIL_FROM=ALX ProConnect <noreply@your-verified-domain.com>`.
+5. Set `APP_URL` to your production URL — it's used for the "Request
+   removal" link in the Talent notification email.
 
 ## How recruiter access works
 
@@ -115,6 +138,40 @@ recruiters:
    engagement-tracking table. Talent-side events (`profile_submitted` so
    far) land in the same table, so you can query both from one place.
 
+## How the select-a-profile flow works
+
+No admin approval gate here — this is a deliberate change from the original
+"gated intro request" design, worth flagging to legal (see note at the
+bottom of this section):
+
+1. A recruiter clicks "View full profile" on a directory card →
+   `/directory/[id]`.
+2. That page load *is* the "selection" event. Server-side, it tries to
+   insert a row into `intro_requests` (`recruiter_id` + `talent_id`, unique
+   together). If the insert succeeds, this is the first time this recruiter
+   has viewed this talent — the Talent gets an immediate email
+   (`sendTalentSelectedEmail`) and a `profile_selected` activity row is
+   logged. If the insert hits the unique conflict (they've viewed this
+   profile before), nothing fires again — visiting the same profile twice
+   doesn't spam the Talent a second time.
+3. The page displays the full profile **including contact details**
+   (email, phone, portfolio, LinkedIn) directly on screen.
+4. From there, two more actions, each independently logged to
+   `activity_log`:
+   - **Send to my email** (`profile_emailed`) — emails the profile to the
+     recruiter's *own* registered address (looked up server-side from
+     their cookie, not a client-supplied address, so it can't be spoofed).
+   - **Download as PDF** (`profile_downloaded`) — generates a one-page PDF
+     with `pdf-lib` and streams it as a file download.
+
+**Worth a legal check-in:** the earlier privacy policy draft said contact
+details are shared "when ALX approves" an intro request. That approval
+step no longer exists in this flow — contact info is shown/sent
+automatically the moment a recruiter selects a profile, matching what you
+and Belinda decided in the meeting, but it means that clause needs
+updating (drop "and ALX approves it") before this goes live for real
+Talent data.
+
 ## How the pieces fit together
 
 | Route | Who | What it does |
@@ -122,16 +179,17 @@ recruiters:
 | `/` | Everyone | Landing page, splits into the two flows |
 | `/apply` | Applicants | Profile intake form → saved as `pending` |
 | `/recruiters` | Recruiters | Email capture (new) or re-entry (returning) → sets cookie → directory |
-| `/directory` | Recruiters (cookie + DB check) | Search/filter published profiles, request intros |
+| `/directory` | Recruiters (cookie + DB check) | Search/filter published profiles |
+| `/directory/[id]` | Recruiters | Full profile view (contact info shown), triggers Talent notification, "send to email" / "download PDF" |
 | `/admin` | FLA team (passcode) | Approve/reject pending profiles, set the showcase score |
 | `/remove-me` | Talent | Request profile takedown |
 
 **Data flow**, matching the ProConnect doc: a talent submits their profile →
 it lands as `pending` → the FLA team reviews it in `/admin` and, if
 approved, sets its score and flips it to `published` → it now appears in the
-recruiter directory → a recruiter's "Request intro" click writes to
-`intro_requests` for the team to action, and logs an `intro_request`
-activity event.
+recruiter directory → a recruiter viewing a profile writes to
+`intro_requests`, notifies the Talent by email, and logs the activity —
+all on the first view of that profile.
 
 ## Privacy & data retention
 
@@ -158,17 +216,16 @@ Built to match the policy legal is drafting:
 
 ## What's intentionally deferred to V2
 
-- **Automated intro emails**, both directions: notifying a Talent when
-  their contact is actually shared with a recruiter, and notifying a
-  recruiter once approved. Right now both are logged in `intro_requests`
-  for the FLA team to action manually. Wiring up automatic email (e.g. via
-  Resend, triggered when an admin marks a request `sent`) is a small,
-  self-contained addition once V1 is validated — flagged as a policy
-  commitment worth building toward soon, since the draft privacy policy
-  already describes this as automatic.
 - **Proper admin roles.** The `/admin` passcode is a shared secret — fine
   for a two-or-three-person team moving fast, but worth upgrading to
   Supabase Auth + a `role` column if the team grows.
-- **Applicant self-edit.** Applicants currently can't update their own
-  profile after submitting; for now, ask the FLA team to edit directly in
-  the Supabase table editor.
+- **Applicant self-edit / dashboard.** Applicants currently can't update
+  their own profile or see how many recruiters have viewed it — that's
+  the next build item (Talent-side sign-in + the delayed status pop-up).
+- **Country code selector, headshot upload error fix, and the Privacy
+  Policy / Terms of Use links** — still on the list from the last
+  planning session, not yet built.
+- **Email deliverability polish.** Once a domain is verified in Resend,
+  worth adding a plain-text fallback alongside the HTML email body, and
+  possibly a "why am I getting this" line for Talent who may not
+  remember submitting their profile.
