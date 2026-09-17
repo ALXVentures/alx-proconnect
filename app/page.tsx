@@ -4,9 +4,9 @@ import { BrandMark } from "@/components/BrandMark";
 import { Footer } from "@/components/Footer";
 
 const STATS = [
-  { value: "250+", label: "Recruiters engaged" },
-  { value: "4.6", label: "Min. panel score to publish" },
-  { value: "0", label: "Cost to recruiters" },
+  { value: "5+", label: "Recruiters engaged" },
+  { value: "4.0", label: "out of 5 Min. panel score to publish" },
+  { value: "11", label: "Top Talents Aggregated" },
 ];
 
 export default function Home() {
@@ -34,7 +34,7 @@ export default function Home() {
       {/* ── Hero ───────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-16 pb-14">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-brass-hi mb-5">
-          A Portfolio Showcase initiative
+          An ALX Ventures Freelancer Academy Program Initiative
         </p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] max-w-3xl">
           Talent that already{" "}
@@ -47,7 +47,7 @@ export default function Home() {
         </p>
 
         <div className="mt-10 max-w-sm">
-          <ScoreMeter value={4.6} />
+          <ScoreMeter value={4.0} />
         </div>
 
         <div className="mt-10 flex flex-wrap gap-x-10 gap-y-3">
@@ -76,8 +76,7 @@ export default function Home() {
               </h2>
               <p className="mt-4 text-text-lo max-w-md">
                 Register once, then browse and search a live directory of
-                showcased graduates. Request an intro and we route contact
-                details to your inbox.
+                top talents trained to work independently. Find your talent and download their details
               </p>
             </div>
             <Link
@@ -101,9 +100,8 @@ export default function Home() {
                 Put your work in front of employers
               </h2>
               <p className="mt-4 text-text-lo max-w-md">
-                Cleared the pitch panel? Submit your profile — headshot,
-                portfolio, and a one-line pitch — for the FLA team to review
-                and publish.
+                This is an invite-only platform. Only approved Talents who have successfully completed shortcourse 3 and cleared the cleared by the portfolio pitch panel are eligible. We pre-approve all submissions after your submission. 
+                Eligible? Get Started and Setup a stellar profile. You've earned it!
               </p>
             </div>
             <Link
