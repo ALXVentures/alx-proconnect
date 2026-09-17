@@ -7,6 +7,8 @@ import { sendTalentSelectedEmail } from "@/lib/email";
 import { RECRUITER_COOKIE } from "@/lib/constants";
 import { ScoreMeter } from "@/components/ScoreMeter";
 import { TalentProfileActions } from "@/components/TalentProfileActions";
+import { BrandMark } from "@/components/BrandMark";
+import { Footer } from "@/components/Footer";
 
 export default async function TalentProfilePage({
   params,
@@ -32,7 +34,7 @@ export default async function TalentProfilePage({
     supabase
       .from("talents")
       .select(
-        "id, full_name, email, phone, country, city, program, one_liner, bio, skill_tags, portfolio_url, linkedin_url, headshot_path, showcase_score"
+        "id, full_name, email, phone, country, city, programs, one_liner, bio, skill_tags, portfolio_url, linkedin_url, headshot_path, showcase_score"
       )
       .eq("id", id)
       .eq("status", "published")
@@ -81,9 +83,7 @@ export default async function TalentProfilePage({
   return (
     <main className="flex-1 bg-ink text-text-hi">
       <header className="max-w-3xl mx-auto px-6 md:px-10 pt-8 flex items-center justify-between">
-        <Link href="/" className="font-display text-lg tracking-tight">
-          ALX <span className="text-teal-hi">ProConnect</span>
-        </Link>
+        <BrandMark theme="dark" />
         <Link
           href="/directory"
           className="font-mono text-xs text-text-lo hover:text-teal-hi transition-colors"
@@ -103,7 +103,7 @@ export default async function TalentProfilePage({
           <div>
             <h1 className="font-display text-3xl">{talent.full_name}</h1>
             <p className="font-mono text-xs text-text-lo mt-1">
-              {[talent.city, talent.country].filter(Boolean).join(", ")} · {talent.program}
+              {[talent.city, talent.country].filter(Boolean).join(", ")} · {talent.programs.join(", ")}
             </p>
           </div>
         </div>
@@ -186,6 +186,8 @@ export default async function TalentProfilePage({
           <TalentProfileActions talentId={talent.id} />
         </div>
       </div>
+
+      <Footer theme="dark" />
     </main>
   );
 }

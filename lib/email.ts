@@ -1,10 +1,63 @@
-import { Resend } from "resend";
+import { google } from "googleapis";
 
-const FROM = process.env.EMAIL_FROM || "ALX ProConnect <onboarding@resend.dev>";
+const SENDER = process.env.GMAIL_SENDER || "";
+const FROM_DISPLAY = `ALX ProConnect <${SENDER}>`;
 
-function getClient() {
-  if (!process.env.RESEND_API_KEY) return null;
-  return new Resend(process.env.RESEND_API_KEY);
+function getGmailClient() {
+  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
+  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
+  if (!email || !rawKey || !SENDER) return null;
+
+  // Vercel's env var UI sometimes stores literal "\n" instead of real
+  // newlines depending on how the key was pasted — normalize either way.
+  const privateKey = rawKey.includes("\\n") ? rawKey.replace(/\\n/g, "\n") : rawKey;
+
+  const auth = new google.auth.JWT({
+    email,
+    key: privateKey,
+    scopes: ["https://www.googleapis.com/auth/gmail.send"],
+    // Domain-wide delegation: this service account impersonates SENDER
+    // (alxventures@...) rather than having its own mailbox. The Workspace
+    // admin must have authorized this service account's Client ID for the
+    // gmail.send scope in Admin Console → Security → API Controls →
+    // Domain-wide Delegation. See README for the exact steps.
+    subject: SENDER,
+  });
+
+  return google.gmail({ version: "v1", auth });
+}
+
+function encodeBase64Url(input: string) {
+  return Buffer.from(input, "utf-8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+// Builds a minimal RFC 2822 MIME message. Subject is UTF-8 encoded per
+// RFC 2047 since recruiter/talent names may include non-ASCII characters.
+function buildRawMessage({
+  to,
+  subject,
+  html,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  const encodedSubject = `=?UTF-8?B?${Buffer.from(subject, "utf-8").toString("base64")}?=`;
+  const message = [
+    `From: ${FROM_DISPLAY}`,
+    `To: ${to}`,
+    `Subject: ${encodedSubject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: text/html; charset="UTF-8"`,
+    ``,
+    html,
+  ].join("\r\n");
+
+  return encodeBase64Url(message);
 }
 
 async function send({
@@ -16,20 +69,24 @@ async function send({
   subject: string;
   html: string;
 }) {
-  const resend = getClient();
-  if (!resend) {
-    // No API key configured (e.g. local dev without .env set up) — log
-    // instead of failing the request that triggered this email.
-    console.log(`[email skipped — no RESEND_API_KEY] to=${to} subject="${subject}"`);
+  const gmail = getGmailClient();
+  if (!gmail) {
+    // Not configured yet (e.g. local dev without the service account env
+    // vars set up) — log instead of failing the request that triggered this.
+    console.log(`[email skipped — Gmail API not configured] to=${to} subject="${subject}"`);
     return { skipped: true };
   }
 
-  const { error } = await resend.emails.send({ from: FROM, to, subject, html });
-  if (error) {
-    console.error("Resend send failed:", error);
-    return { skipped: false, error };
+  try {
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: buildRawMessage({ to, subject, html }) },
+    });
+    return { skipped: false };
+  } catch (err) {
+    console.error("Gmail API send failed:", err);
+    return { skipped: false, error: err };
   }
-  return { skipped: false };
 }
 
 function wrapper(bodyHtml: string) {

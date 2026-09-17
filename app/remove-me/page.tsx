@@ -1,19 +1,18 @@
-import Link from "next/link";
 import { TakedownForm } from "@/components/TakedownForm";
+import { BrandMark } from "@/components/BrandMark";
+import { Footer } from "@/components/Footer";
 
 export default function RemoveMePage() {
   return (
-    <main className="paper flex-1 bg-paper text-text-ink">
-      <header className="max-w-2xl mx-auto px-6 md:px-0 pt-8 flex items-center justify-between">
-        <Link href="/" className="font-display text-lg tracking-tight text-text-ink">
-          ALX <span className="text-brass">ProConnect</span>
-        </Link>
+    <main className="paper flex-1 bg-paper text-text-ink flex flex-col">
+      <header className="max-w-2xl mx-auto w-full px-6 md:px-0 pt-8 flex items-center justify-between">
+        <BrandMark theme="light" />
         <span className="font-mono text-[11px] uppercase tracking-widest text-text-ink-lo">
           Remove my profile
         </span>
       </header>
 
-      <div className="max-w-2xl mx-auto px-6 md:px-0 pt-12 pb-24">
+      <div className="max-w-2xl mx-auto w-full px-6 md:px-0 pt-12 pb-24 flex-1">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-brass mb-4">
           Talent profile removal
         </p>
@@ -27,6 +26,8 @@ export default function RemoveMePage() {
 
         <TakedownForm />
       </div>
+
+      <Footer theme="light" />
     </main>
   );
 }

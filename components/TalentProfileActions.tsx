@@ -21,7 +21,7 @@ export function TalentProfileActions({ talentId }: { talentId: string }) {
       <button
         onClick={sendToEmail}
         disabled={emailStatus === "sending" || emailStatus === "sent"}
-        className="font-mono text-xs uppercase tracking-wide rounded-md px-6 py-3 bg-teal text-text-hi hover:bg-teal-hi transition-colors disabled:opacity-60"
+        className="font-mono text-xs uppercase tracking-wide rounded-md px-6 py-3 bg-teal text-ink hover:bg-teal-hi transition-colors disabled:opacity-60"
       >
         {emailStatus === "sent"
           ? "Sent to your email ✓"

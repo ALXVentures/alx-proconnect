@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase/server";
 import { RECRUITER_COOKIE } from "@/lib/constants";
 import { DirectoryGrid, type Talent } from "@/components/DirectoryGrid";
 import { SwitchRecruiterButton } from "@/components/SwitchRecruiterButton";
+import { BrandMark } from "@/components/BrandMark";
+import { Footer } from "@/components/Footer";
 
 export default async function DirectoryPage() {
   const cookieStore = await cookies();
@@ -33,7 +34,7 @@ export default async function DirectoryPage() {
     supabase
       .from("talents")
       .select(
-        "id, full_name, country, city, program, skill_tags, one_liner, portfolio_url, linkedin_url, headshot_path, showcase_score"
+        "id, full_name, country, city, programs, skill_tags, one_liner, portfolio_url, linkedin_url, headshot_path, showcase_score"
       )
       .eq("status", "published")
       .order("created_at", { ascending: false }),
@@ -50,11 +51,9 @@ export default async function DirectoryPage() {
   const viewedIds = new Set((requests || []).map((r) => r.talent_id));
 
   return (
-    <main className="flex-1 bg-ink text-text-hi">
-      <header className="max-w-6xl mx-auto px-6 md:px-10 pt-8 flex items-center justify-between">
-        <Link href="/" className="font-display text-lg tracking-tight">
-          ALX <span className="text-teal-hi">ProConnect</span>
-        </Link>
+    <main className="flex-1 bg-ink text-text-hi flex flex-col">
+      <header className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-8 flex items-center justify-between">
+        <BrandMark theme="dark" />
         <div className="flex items-center gap-5 font-mono text-xs text-text-lo">
           <span className="hidden sm:inline">
             {recruiter.full_name} · {recruiter.company}
@@ -63,7 +62,7 @@ export default async function DirectoryPage() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-10 pt-10 pb-6">
+      <div className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-10 pb-6">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-teal-hi mb-3">
           Live directory
         </p>
@@ -73,9 +72,11 @@ export default async function DirectoryPage() {
         </h1>
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-10 pb-24">
+      <div className="max-w-6xl mx-auto w-full px-6 md:px-10 pb-24 flex-1">
         <DirectoryGrid talents={talentsWithUrls} viewedIds={viewedIds} />
       </div>
+
+      <Footer theme="dark" />
     </main>
   );
 }

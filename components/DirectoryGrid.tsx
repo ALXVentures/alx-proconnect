@@ -10,7 +10,7 @@ export type Talent = {
   full_name: string;
   country: string;
   city: string | null;
-  program: string;
+  programs: string[];
   skill_tags: string[];
   one_liner: string;
   portfolio_url: string | null;
@@ -104,7 +104,7 @@ function TalentCard({ talent, alreadyViewed }: { talent: Talent; alreadyViewed: 
           </div>
           <div className="font-mono text-[11px] text-text-lo truncate">
             {[talent.city, talent.country].filter(Boolean).join(", ")} ·{" "}
-            {talent.program}
+            {talent.programs.join(", ")}
           </div>
         </div>
       </div>
@@ -130,7 +130,7 @@ function TalentCard({ talent, alreadyViewed }: { talent: Talent; alreadyViewed: 
 
       <Link
         href={`/directory/${talent.id}`}
-        className="mt-5 w-full text-center font-mono text-xs uppercase tracking-wide rounded-md py-2.5 transition-colors bg-teal text-text-hi hover:bg-teal-hi"
+        className="mt-5 w-full text-center font-mono text-xs uppercase tracking-wide rounded-md py-2.5 transition-colors bg-teal text-ink hover:bg-teal-hi"
       >
         {alreadyViewed ? "View profile again" : "View full profile"}
       </Link>

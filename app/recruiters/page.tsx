@@ -1,14 +1,14 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { RecruiterEntryForm } from "@/components/RecruiterEntryForm";
+import { BrandMark } from "@/components/BrandMark";
+import { Footer } from "@/components/Footer";
 
 export default function RecruitersPage() {
   return (
     <main className="flex-1 bg-ink text-text-hi">
       <header className="max-w-2xl mx-auto px-6 md:px-0 pt-8">
-        <Link href="/" className="font-display text-lg tracking-tight">
-          ALX <span className="text-teal-hi">ProConnect</span>
-        </Link>
+        <BrandMark theme="dark" />
       </header>
 
       <div className="max-w-2xl mx-auto px-6 md:px-0 pt-12 pb-24">
@@ -27,6 +27,8 @@ export default function RecruitersPage() {
           <RecruiterEntryForm />
         </Suspense>
       </div>
+
+      <Footer theme="dark" />
     </main>
   );
 }

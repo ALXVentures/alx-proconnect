@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { BrandMark } from "@/components/BrandMark";
 
 export function AdminLogin() {
   const router = useRouter();
@@ -31,9 +32,7 @@ export function AdminLogin() {
     <main className="flex-1 bg-ink text-text-hi flex items-center">
       <form onSubmit={handleSubmit} className="max-w-sm mx-auto px-6 w-full space-y-5">
         <div>
-          <span className="font-display text-lg">
-            ALX <span className="text-brass-hi">ProConnect</span>
-          </span>
+          <BrandMark theme="dark" href={null} />
           <p className="mt-1 font-mono text-[11px] uppercase tracking-widest text-text-lo">
             Moderation queue
           </p>

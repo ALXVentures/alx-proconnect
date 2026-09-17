@@ -12,6 +12,34 @@ capture (see "How recruiter access works" below).
 
 ---
 
+## Branding notes
+
+- **Logo:** `public/alx-ventures-logo.png` (navy/gold, for light "paper"
+  pages like `/apply`) and `public/alx-ventures-logo-light.png` (white/gold,
+  for the dark pages). I generated the light variant myself — the navy in
+  your source file only had ~1.8:1 contrast against our dark background
+  (essentially invisible), so I recolored the navy strokes to off-white
+  while keeping the gold "+" untouched. If ALX Ventures has an official
+  reversed/white logo, swap it in instead.
+- **Color:** `app/globals.css` now runs on your actual brand hex values.
+  One adjustment worth knowing about: `Jasmine Yellow` (#FDE791) is used
+  at full brightness everywhere it sits on a dark background, but a few
+  spots use it as *text on the light paper pages* (the "Portfolio Showcase
+  graduates only" eyebrow label, for instance) — full Jasmine there is
+  nearly unreadable against a near-white background, so those spots use a
+  darkened, same-hue gold (`--brass`, #C8A004) instead. Same logic applies
+  to Jungle Green buttons, which use dark text rather than white — white
+  text on Jungle Green only hit 2.4:1 contrast.
+- **Font:** Poppins, loaded for both headings and body text. IBM Plex Mono
+  is kept for the small numeric/label accents (scores, tags, nav) since
+  Poppins has no monospace variant and that contrast is part of the site's
+  visual language.
+- **`/talent`** is a placeholder page — "Talent Log in" needed a real
+  destination and the actual dashboard (view counts, self-edit) is queued
+  as the next build item, not built yet.
+
+---
+
 ## Already have this deployed? Run the migration, not the full schema
 
 If you already ran `supabase/schema.sql` on a live project (i.e. you did the
@@ -26,6 +54,12 @@ migrations in order in the SQL Editor:
    adds `company_website`, `industry`, `company_size`, and the recruiter's
    own `linkedin_url` to `recruiters` (all nullable — safe to run anytime,
    won't affect existing rows).
+3. [`supabase/migrations/004_multi_program.sql`](./supabase/migrations/004_multi_program.sql) —
+   converts `talents.program` (single value) into `talents.programs` (an
+   array), carrying over your existing test row's value before dropping
+   the old column. **Run this one before deploying the new code** — the
+   updated app queries `programs`, not `program`, so the old column name
+   will 404/500 until this runs.
 
 ---
 
@@ -79,7 +113,7 @@ extra fields.
 2. On [vercel.com](https://vercel.com), **New Project → Import** the repo.
 3. Framework preset auto-detects Next.js — no changes needed.
 4. Under **Environment Variables**, add all the variables
-   from `.env.local`, including the Resend ones below.
+   from `.env.local`, including the Gmail API ones below.
 5. Deploy. No Supabase Auth URL configuration needed — there's no
    magic-link redirect to worry about since recruiters and Talent never
    hold a Supabase session.
@@ -90,28 +124,45 @@ personal use — ALX isn't charging recruiters or applicants, so this should
 be fine, but it's worth keeping in mind if the product ever adds paid
 placements.
 
-## 5. Set up email (Resend)
+## 5. Set up email (Gmail API, sending as alxventures@)
 
-The "notify Talent" and "send to my email" features need a real email
-provider — Supabase doesn't send arbitrary transactional email.
+The "notify Talent" and "send to my email" features send through the
+existing `alxventures@` Google Workspace account via domain-wide
+delegation, using the service account ALX already has set up — no new
+domain to verify, since Workspace already has working SPF/DKIM for your
+domain.
 
-1. Sign up at [resend.com](https://resend.com) (free tier: 3,000
-   emails/month, 100/day — plenty for V1).
-2. **Settings → API Keys → Create API Key**, copy it into
-   `RESEND_API_KEY`.
-3. **Important limitation:** until you verify a domain, Resend only lets
-   you send *to your own account email* — every other recipient gets a
-   403. That means Talent notifications and "send to my email" will
-   silently fail (logged, not crashing the app) for anyone but you during
-   testing.
-4. To actually notify real Talent and recruiters, verify a domain:
-   **Domains → Add Domain** — use a subdomain you control (e.g.
-   `mail.alxproconnect.com`, or whatever ALX's IT/legal decides fits the
-   data-hosting-region conversation from earlier). Add the SPF/DKIM DNS
-   records Resend gives you, wait for verification, then set
-   `EMAIL_FROM=ALX ProConnect <noreply@your-verified-domain.com>`.
-5. Set `APP_URL` to your production URL — it's used for the "Request
+1. In the [Google Cloud Console](https://console.cloud.google.com), open
+   the project tied to your existing service account and confirm the
+   **Gmail API** is enabled (APIs & Services → Library → search "Gmail
+   API" → Enable, if it isn't already).
+2. Grab the service account's **Client ID** — on its details page
+   (IAM & Admin → Service Accounts → click the account → the numeric
+   "Unique ID" is what Workspace calls the Client ID for delegation).
+3. As a **Google Workspace super admin**, go to
+   [admin.google.com](https://admin.google.com) → Security → Access and
+   data control → API Controls → **Domain-wide Delegation** → Add new.
+   Paste the Client ID from step 2, and under OAuth scopes add exactly:
+   `https://www.googleapis.com/auth/gmail.send`
+   (If this service account already has delegation for other scopes from
+   PMMS or another tool, add `gmail.send` to that same entry rather than
+   creating a second one.)
+4. From the service account's JSON key file (the one you already have),
+   pull two values into your env vars:
+   - `client_email` → `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+   - `private_key` → `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` (paste it
+     exactly as it appears in the JSON, including the `-----BEGIN PRIVATE
+     KEY-----` header — Vercel's env var UI handles the embedded newlines
+     fine either way)
+5. Set `GMAIL_SENDER=alxventures@your-actual-domain.com` — this is the
+   mailbox the service account impersonates. Since it's a real, monitored
+   inbox, replies from Talent or recruiters will land there like any other
+   email.
+6. Set `APP_URL` to your production URL — it's used for the "Request
    removal" link in the Talent notification email.
+
+No sandbox restriction to worry about this time — once delegation is
+authorized, this can send to any address immediately, not just your own.
 
 ## How recruiter access works
 
@@ -225,7 +276,8 @@ Built to match the policy legal is drafting:
 - **Country code selector, headshot upload error fix, and the Privacy
   Policy / Terms of Use links** — still on the list from the last
   planning session, not yet built.
-- **Email deliverability polish.** Once a domain is verified in Resend,
-  worth adding a plain-text fallback alongside the HTML email body, and
-  possibly a "why am I getting this" line for Talent who may not
-  remember submitting their profile.
+- **Email polish.** Worth adding a plain-text fallback alongside the HTML
+  email body, and possibly a "why am I getting this" line for Talent who
+  may not remember submitting their profile. Also worth watching Gmail's
+  per-user sending limits (roughly 2,000/day on Workspace) if volume ever
+  grows well past V1 scale — not a concern yet, just a future check-in.

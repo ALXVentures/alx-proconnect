@@ -18,7 +18,7 @@ create table if not exists talents (
   phone          text,
   country        text not null,
   city           text,
-  program        text not null,               -- e.g. 'FLA', matches ALX program taxonomy
+  programs       text[] not null default '{}',  -- e.g. ['FLA','AiCE'] — a talent can belong to more than one program
   skill_tags     text[] not null default '{}',
   one_liner      text not null,                -- short value proposition shown on the card
   bio            text,
@@ -34,6 +34,7 @@ create table if not exists talents (
 
 create index if not exists talents_status_idx on talents (status);
 create index if not exists talents_skill_tags_idx on talents using gin (skill_tags);
+create index if not exists talents_programs_idx on talents using gin (programs);
 
 alter table talents enable row level security;
 -- No public policies: every read (directory) and write (apply form, admin

@@ -125,7 +125,7 @@ export function RecruiterEntryForm() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full sm:w-auto font-mono text-sm tracking-wide uppercase bg-teal text-text-hi px-8 py-3.5 rounded-md hover:bg-teal-hi transition-colors disabled:opacity-50"
+          className="w-full sm:w-auto font-mono text-sm tracking-wide uppercase bg-teal text-ink px-8 py-3.5 rounded-md hover:bg-teal-hi transition-colors disabled:opacity-50"
         >
           {submitting ? "Continuing…" : "Continue to directory"}
         </button>
@@ -157,7 +157,7 @@ export function RecruiterEntryForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full sm:w-auto font-mono text-sm tracking-wide uppercase bg-teal text-text-hi px-8 py-3.5 rounded-md hover:bg-teal-hi transition-colors disabled:opacity-50"
+        className="w-full sm:w-auto font-mono text-sm tracking-wide uppercase bg-teal text-ink px-8 py-3.5 rounded-md hover:bg-teal-hi transition-colors disabled:opacity-50"
       >
         {submitting ? "Checking…" : "Continue"}
       </button>

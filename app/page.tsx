@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ScoreMeter } from "@/components/ScoreMeter";
+import { BrandMark } from "@/components/BrandMark";
+import { Footer } from "@/components/Footer";
 
 const STATS = [
   { value: "250+", label: "Recruiters engaged" },
@@ -9,25 +11,28 @@ const STATS = [
 
 export default function Home() {
   return (
-    <main className="flex-1">
+    <main className="flex-1 flex flex-col">
       {/* ── Header ─────────────────────────────────────────── */}
-      <header className="max-w-6xl mx-auto px-6 md:px-10 pt-8 flex items-center justify-between">
-        <div className="font-display text-lg tracking-tight">
-          ALX <span className="text-brass-hi">ProConnect</span>
-        </div>
+      <header className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-8 flex items-center justify-between">
+        <BrandMark theme="dark" href={null} />
         <nav className="font-mono text-xs tracking-wide text-text-lo flex items-center gap-6">
-          <span className="hidden sm:inline">Freelancer Academy</span>
           <Link
             href="/recruiters"
             className="text-text-hi hover:text-teal-hi transition-colors"
           >
             Browse talent
           </Link>
+          <Link
+            href="/talent"
+            className="text-text-hi hover:text-brass-hi transition-colors"
+          >
+            Talent Log in
+          </Link>
         </nav>
       </header>
 
       {/* ── Hero ───────────────────────────────────────────── */}
-      <section className="max-w-6xl mx-auto px-6 md:px-10 pt-16 pb-14">
+      <section className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-16 pb-14">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-brass-hi mb-5">
           A Portfolio Showcase initiative
         </p>
@@ -61,10 +66,7 @@ export default function Home() {
       <section className="border-t border-ink-line">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[1fr_1px_1fr]">
           {/* Recruiter door */}
-          <Link
-            href="/recruiters"
-            className="group relative px-6 md:px-10 py-16 flex flex-col justify-between hover:bg-ink-2 transition-colors"
-          >
+          <div className="relative px-6 md:px-10 py-16 flex flex-col justify-between">
             <div>
               <span className="font-mono text-[11px] tracking-widest uppercase text-teal-hi">
                 For recruiters &amp; founders
@@ -78,21 +80,19 @@ export default function Home() {
                 details to your inbox.
               </p>
             </div>
-            <div className="mt-10 inline-flex items-center gap-2 font-mono text-sm text-teal-hi">
-              Browse the directory
-              <span className="group-hover:translate-x-1 transition-transform">
-                →
-              </span>
-            </div>
-          </Link>
+            <Link
+              href="/recruiters"
+              className="cta-bounce mt-10 inline-flex w-fit items-center gap-2 font-mono text-sm font-medium uppercase tracking-wide bg-twilight text-white px-7 py-3.5 rounded-full shadow-lg shadow-twilight/20 hover:bg-twilight-hi transition-colors"
+            >
+              Search Vetted Talent
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
 
           <div className="hidden md:block ledger-rule" />
 
           {/* Applicant door */}
-          <Link
-            href="/apply"
-            className="group relative px-6 md:px-10 py-16 flex flex-col justify-between border-t md:border-t-0 border-ink-line hover:bg-ink-2 transition-colors"
-          >
+          <div className="relative px-6 md:px-10 py-16 flex flex-col justify-between border-t md:border-t-0 border-ink-line">
             <div>
               <span className="font-mono text-[11px] tracking-widest uppercase text-brass-hi">
                 For Showcase graduates
@@ -106,24 +106,18 @@ export default function Home() {
                 and publish.
               </p>
             </div>
-            <div className="mt-10 inline-flex items-center gap-2 font-mono text-sm text-brass-hi">
-              Submit your profile
-              <span className="group-hover:translate-x-1 transition-transform">
-                →
-              </span>
-            </div>
-          </Link>
+            <Link
+              href="/apply"
+              className="cta-bounce mt-10 inline-flex w-fit items-center gap-2 font-mono text-sm font-medium uppercase tracking-wide bg-brass-hi text-ink px-7 py-3.5 rounded-full shadow-lg shadow-brass-hi/20 hover:bg-brass transition-colors"
+            >
+              Submit Your Profile
+              <span aria-hidden>→</span>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <footer className="border-t border-ink-line mt-auto">
-        <div className="max-w-6xl mx-auto px-6 md:px-10 py-8 flex flex-col sm:flex-row gap-3 justify-between font-mono text-[11px] text-text-lo">
-          <span>ALX ProConnect — built by the FLA program team</span>
-          <Link href="/remove-me" className="hover:text-brass-hi transition-colors">
-            Request profile removal
-          </Link>
-        </div>
-      </footer>
+      <Footer theme="dark" showRemoveMeLink />
     </main>
   );
 }

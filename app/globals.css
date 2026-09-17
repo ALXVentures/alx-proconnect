@@ -1,32 +1,42 @@
 @import "tailwindcss";
 
 :root {
-  /* Ink surfaces */
-  --ink: #12151c;
-  --ink-2: #1a1f29;
-  --ink-3: #232a37;
-  --ink-line: #2c3341;
+  /* Ink surfaces — ALX Ventures Black + Deep Navy */
+  --ink: #1c1f2a;
+  --ink-2: #03134f;
+  --ink-3: #0a2066;
+  --ink-line: #253478;
 
   /* Paper surfaces (form / admin contexts) */
-  --paper: #f3f2ec;
-  --paper-2: #e9e7dc;
-  --paper-line: #d8d5c6;
+  --paper: #f4f4f1;
+  --paper-2: #eae9e2;
+  --paper-line: #d9d7ce;
 
   /* Text */
   --text-hi: #f4f3ee;
-  --text-lo: #a3aab8;
-  --text-ink: #1c2026;
-  --text-ink-lo: #5b6270;
+  --text-lo: #9aa3c7;
+  --text-ink: #1c1f2a;
+  --text-ink-lo: #4a5170;
 
-  /* Accents */
-  --brass: #c89b3c;
-  --brass-hi: #e0b862;
-  --teal: #2f6f62;
-  --teal-hi: #3f8c7c;
+  /* Accents — derived from ALX Ventures Jasmine Yellow (talent side) and
+     Jungle Green (recruiter side). The "-hi" variant is the true brand hex,
+     used on dark backgrounds; the base variant is a darkened, same-hue
+     tone kept legible as text on the light paper surfaces and as button
+     backgrounds paired with dark text. */
+  --brass: #c8a004;
+  --brass-hi: #fde791;
+  --teal: #02b75e;
+  --teal-hi: #02e375;
   --rose: #b3563f;
 
-  --font-display: var(--font-fraunces);
-  --font-body: var(--font-inter);
+  /* Reserved for the two hero CTA buttons and other one-off emphasis —
+     deliberately not reused as general accents so they keep their punch. */
+  --twilight: #0452f0;
+  --twilight-hi: #3b74f5;
+  --lime: #c4e878;
+
+  --font-display: var(--font-poppins);
+  --font-body: var(--font-poppins);
   --font-mono: var(--font-plex-mono);
 }
 
@@ -47,6 +57,9 @@
   --color-teal: var(--teal);
   --color-teal-hi: var(--teal-hi);
   --color-rose: var(--rose);
+  --color-twilight: var(--twilight);
+  --color-twilight-hi: var(--twilight-hi);
+  --color-lime: var(--lime);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-mono: var(--font-mono);
@@ -67,7 +80,7 @@ body {
 }
 
 ::selection {
-  background: var(--brass);
+  background: var(--brass-hi);
   color: var(--ink);
 }
 
@@ -87,7 +100,8 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display), ui-serif, Georgia, serif;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
 }
 
 .font-mono {
@@ -113,4 +127,20 @@ body {
     transparent 1px,
     transparent 10px
   );
+}
+
+/* Gentle, attention-drawing motion for the two hero CTA buttons — subtle
+   enough not to be annoying, disabled entirely for reduced-motion users
+   by the media query above. */
+@keyframes cta-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.cta-bounce {
+  animation: cta-bounce 2.2s ease-in-out infinite;
+}
+
+.cta-bounce:hover {
+  animation-play-state: paused;
 }

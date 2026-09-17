@@ -8,13 +8,26 @@ const PROGRAMS = ["FLA", "AiCE", "VA", "GD", "CC"];
 export function ApplyForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [programs, setPrograms] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [headshotName, setHeadshotName] = useState<string | null>(null);
 
+  function toggleProgram(p: string) {
+    setPrograms((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    if (programs.length === 0) {
+      setError("Select at least one program.");
+      return;
+    }
+
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
@@ -28,6 +41,10 @@ export function ApplyForm() {
         .filter(Boolean)
         .join(",")
     );
+    // programs is a checkbox pill group, not a native form field — append
+    // each selection as its own entry so the server can read them with
+    // formData.getAll("programs")
+    programs.forEach((p) => formData.append("programs", p));
 
     try {
       const res = await fetch("/api/apply", { method: "POST", body: formData });
@@ -58,17 +75,30 @@ export function ApplyForm() {
           <Field label="City" name="city" />
         </Row>
         <div>
-          <label className="field-label" htmlFor="program">
-            Program
-          </label>
-          <select id="program" name="program" required className="field-input">
-            <option value="">Select your program</option>
-            {PROGRAMS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+          <label className="field-label">Programs</label>
+          <div className="flex flex-wrap gap-2">
+            {PROGRAMS.map((p) => {
+              const selected = programs.includes(p);
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => toggleProgram(p)}
+                  aria-pressed={selected}
+                  className={`font-mono text-xs uppercase tracking-wide px-4 py-2 rounded-full border transition-colors ${
+                    selected
+                      ? "bg-ink text-text-hi border-ink"
+                      : "bg-paper text-text-ink-lo border-paper-line hover:border-text-ink-lo"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-1.5 font-mono text-[11px] text-text-ink-lo">
+            Select all that apply — you can be on more than one program.
+          </p>
         </div>
       </Fieldset>
 

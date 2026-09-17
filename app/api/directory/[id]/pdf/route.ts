@@ -35,7 +35,7 @@ async function buildPdf(talent: {
   phone: string | null;
   country: string;
   city: string | null;
-  program: string;
+  programs: string[];
   one_liner: string;
   bio: string | null;
   skill_tags: string[];
@@ -59,7 +59,7 @@ async function buildPdf(talent: {
 
   const metaLine = [
     [talent.city, talent.country].filter(Boolean).join(", "),
-    talent.program,
+    talent.programs.join(", "),
     talent.showcase_score ? `Showcase score ${talent.showcase_score.toFixed(1)}/5` : null,
   ]
     .filter(Boolean)
@@ -131,7 +131,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     supabase
       .from("talents")
       .select(
-        "full_name, email, phone, country, city, program, one_liner, bio, skill_tags, portfolio_url, linkedin_url, showcase_score"
+        "full_name, email, phone, country, city, programs, one_liner, bio, skill_tags, portfolio_url, linkedin_url, showcase_score"
       )
       .eq("id", id)
       .eq("status", "published")

@@ -81,7 +81,7 @@ export type PendingTalent = {
   full_name: string;
   email: string;
   country: string;
-  program: string;
+  programs: string[];
   one_liner: string;
   bio: string | null;
   portfolio_url: string | null;
@@ -144,7 +144,7 @@ function QueueCard({ talent }: { talent: PendingTalent }) {
         <div className="min-w-0">
           <div className="font-display text-xl">{talent.full_name}</div>
           <div className="font-mono text-[11px] text-text-lo">
-            {talent.email} · {talent.country} · {talent.program}
+            {talent.email} · {talent.country} · {talent.programs.join(", ")}
           </div>
           <p className="mt-2 text-sm text-text-lo">{talent.one_liner}</p>
           {talent.bio && <p className="mt-2 text-sm text-text-lo">{talent.bio}</p>}
@@ -203,7 +203,7 @@ function QueueCard({ talent }: { talent: PendingTalent }) {
         <button
           onClick={() => act("approve")}
           disabled={busy}
-          className="font-mono text-xs uppercase tracking-wide rounded-md py-2.5 bg-teal hover:bg-teal-hi transition-colors disabled:opacity-50"
+          className="font-mono text-xs uppercase tracking-wide rounded-md py-2.5 bg-teal text-ink hover:bg-teal-hi transition-colors disabled:opacity-50"
         >
           Publish
         </button>
