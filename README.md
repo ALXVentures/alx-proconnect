@@ -124,45 +124,41 @@ personal use — ALX isn't charging recruiters or applicants, so this should
 be fine, but it's worth keeping in mind if the product ever adds paid
 placements.
 
-## 5. Set up email (Gmail API, sending as alxventures@)
+## 5. Set up email (Gmail API, reusing PeerFinder's OAuth credential)
 
-The "notify Talent" and "send to my email" features send through the
-existing `alxventures@` Google Workspace account via domain-wide
-delegation, using the service account ALX already has set up — no new
-domain to verify, since Workspace already has working SPF/DKIM for your
-domain.
+The "notify Talent" and "send to my email" features send through the same
+OAuth client + refresh token that already powers PeerFinder's match
+notifications — no Workspace admin step, no domain-wide delegation,
+nothing new to authorize. The refresh token is tied to whichever Google
+account did the original "sign in with Google" consent (for this project,
+`programs@alx-ventures.com`), and `googleapis` handles exchanging it for a
+fresh access token automatically, the same way it already does for
+PeerFinder.
 
-1. In the [Google Cloud Console](https://console.cloud.google.com), open
-   the project tied to your existing service account and confirm the
-   **Gmail API** is enabled (APIs & Services → Library → search "Gmail
-   API" → Enable, if it isn't already).
-2. Grab the service account's **Client ID** — on its details page
-   (IAM & Admin → Service Accounts → click the account → the numeric
-   "Unique ID" is what Workspace calls the Client ID for delegation).
-3. As a **Google Workspace super admin**, go to
-   [admin.google.com](https://admin.google.com) → Security → Access and
-   data control → API Controls → **Domain-wide Delegation** → Add new.
-   Paste the Client ID from step 2, and under OAuth scopes add exactly:
-   `https://www.googleapis.com/auth/gmail.send`
-   (If this service account already has delegation for other scopes from
-   PMMS or another tool, add `gmail.send` to that same entry rather than
-   creating a second one.)
-4. From the service account's JSON key file (the one you already have),
-   pull two values into your env vars:
-   - `client_email` → `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-   - `private_key` → `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY` (paste it
-     exactly as it appears in the JSON, including the `-----BEGIN PRIVATE
-     KEY-----` header — Vercel's env var UI handles the embedded newlines
-     fine either way)
-5. Set `GMAIL_SENDER=alxventures@your-actual-domain.com` — this is the
-   mailbox the service account impersonates. Since it's a real, monitored
-   inbox, replies from Talent or recruiters will land there like any other
-   email.
-6. Set `APP_URL` to your production URL — it's used for the "Request
+1. From PeerFinder's stored OAuth credentials, pull three values into env
+   vars:
+   - `client_id` → `GOOGLE_OAUTH_CLIENT_ID`
+   - `client_secret` → `GOOGLE_OAUTH_CLIENT_SECRET`
+   - `refresh_token` → `GOOGLE_OAUTH_REFRESH_TOKEN`
+2. Set `GMAIL_SENDER` to **exactly** the email address that granted the
+   original OAuth consent — `programs@alx-ventures.com` for this project.
+   This has to match precisely (or be a verified "send as" alias of that
+   account); Gmail rejects or silently rewrites a From header that doesn't
+   match the authenticated account.
+3. Set `APP_URL` to your production URL — it's used for the "Request
    removal" link in the Talent notification email.
 
-No sandbox restriction to worry about this time — once delegation is
-authorized, this can send to any address immediately, not just your own.
+**Worth knowing:** this couples ProConnect's email sending to PeerFinder's
+credential — if that refresh token is ever rotated or revoked for
+PeerFinder-specific reasons, ProConnect's emails stop working too, and
+vice versa. Fine for now with one person maintaining both, but worth a
+mental note if either project changes hands. Also worth confirming with
+whoever owns `programs@alx-ventures.com` that they're expecting
+ProConnect's automated traffic mixed in with PeerFinder's.
+
+**Never commit these values to the repo or paste them in chat/Slack** —
+set them directly in Vercel's environment variable fields (and your local
+`.env.local`, which is gitignored).
 
 ## How recruiter access works
 

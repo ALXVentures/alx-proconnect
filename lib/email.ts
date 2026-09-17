@@ -4,27 +4,22 @@ const SENDER = process.env.GMAIL_SENDER || "";
 const FROM_DISPLAY = `ALX ProConnect <${SENDER}>`;
 
 function getGmailClient() {
-  const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-  const rawKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY;
-  if (!email || !rawKey || !SENDER) return null;
+  const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
+  if (!clientId || !clientSecret || !refreshToken || !SENDER) return null;
 
-  // Vercel's env var UI sometimes stores literal "\n" instead of real
-  // newlines depending on how the key was pasted — normalize either way.
-  const privateKey = rawKey.includes("\\n") ? rawKey.replace(/\\n/g, "\n") : rawKey;
+  // OAuth2 with a refresh token — the same credential type used to send
+  // PeerFinder's match notifications. googleapis automatically exchanges
+  // the refresh token for a fresh access token as needed; no domain-wide
+  // delegation or Workspace admin step required. GMAIL_SENDER must match
+  // the email address that originally granted this consent (or a verified
+  // "send as" alias of it) — Gmail rejects/rewrites a From header that
+  // doesn't match the authenticated account.
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret);
+  oauth2Client.setCredentials({ refresh_token: refreshToken });
 
-  const auth = new google.auth.JWT({
-    email,
-    key: privateKey,
-    scopes: ["https://www.googleapis.com/auth/gmail.send"],
-    // Domain-wide delegation: this service account impersonates SENDER
-    // (alxventures@...) rather than having its own mailbox. The Workspace
-    // admin must have authorized this service account's Client ID for the
-    // gmail.send scope in Admin Console → Security → API Controls →
-    // Domain-wide Delegation. See README for the exact steps.
-    subject: SENDER,
-  });
-
-  return google.gmail({ version: "v1", auth });
+  return google.gmail({ version: "v1", auth: oauth2Client });
 }
 
 function encodeBase64Url(input: string) {
