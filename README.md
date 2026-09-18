@@ -14,13 +14,21 @@ capture (see "How recruiter access works" below).
 
 ## Branding notes
 
-- **Logo:** `public/alx-ventures-logo.png` (navy/gold, for light "paper"
-  pages like `/apply`) and `public/alx-ventures-logo-light.png` (white/gold,
-  for the dark pages). I generated the light variant myself — the navy in
-  your source file only had ~1.8:1 contrast against our dark background
-  (essentially invisible), so I recolored the navy strokes to off-white
-  while keeping the gold "+" untouched. If ALX Ventures has an official
-  reversed/white logo, swap it in instead.
+- **Logo:** you sent the full "alx / Ventures" lockup as a JPG on a solid
+  black background. I keyed out the background to transparency, producing
+  `public/alx-ventures-logo.png` (navy/gold, for the light "paper" pages
+  like `/apply`) and `public/alx-ventures-logo-light.png` (white/gold, for
+  the dark pages) — both are the full two-line lockup ("alx" above
+  "VENTURES"), used as-is in the header `BrandMark` at 48px tall (60px in
+  the `size="large"` variant) so the "VENTURES" line stays legible rather
+  than shrinking into mush the way it would at a typical ~20px logo
+  height. Both come in a dark-background and light-background version:
+  your source file's navy only hits ~1.8:1 contrast against our dark
+  theme (nearly invisible), so the dark-background variant recolors both
+  "alx" and "VENTURES" toward white/off-white, and the light-background
+  variant goes the other way (white → deep navy) since white is equally
+  invisible on our near-white paper pages. The gold "+" is untouched in
+  both.
 - **Color:** `app/globals.css` now runs on your actual brand hex values.
   One adjustment worth knowing about: `Jasmine Yellow` (#FDE791) is used
   at full brightness everywhere it sits on a dark background, but a few
@@ -57,9 +65,14 @@ migrations in order in the SQL Editor:
 3. [`supabase/migrations/004_multi_program.sql`](./supabase/migrations/004_multi_program.sql) —
    converts `talents.program` (single value) into `talents.programs` (an
    array), carrying over your existing test row's value before dropping
-   the old column. **Run this one before deploying the new code** — the
-   updated app queries `programs`, not `program`, so the old column name
-   will 404/500 until this runs.
+   the old column.
+4. [`supabase/migrations/005_remove_programs.sql`](./supabase/migrations/005_remove_programs.sql) —
+   drops `talents.programs` entirely. The team decided to stop collecting
+   program at submission time, so if you're setting this up fresh today,
+   you can skip straight past both program-related migrations — the
+   column never needs to exist. **Run this before deploying the new
+   code** if you already have `programs` from migration 004 — the app no
+   longer references that column at all.
 
 ---
 
@@ -86,7 +99,7 @@ migrations in order in the SQL Editor:
 
 Copy the template and fill in the four values from above, plus your own
 admin passcode (this gates `/admin`, the moderation queue — treat it like a
-shared team password):
+shared team password).
 
 ```bash
 cp .env.local.example .env.local
@@ -218,6 +231,42 @@ automatically the moment a recruiter selects a profile, matching what you
 and Belinda decided in the meeting, but it means that clause needs
 updating (drop "and ALX approves it") before this goes live for real
 Talent data.
+
+## Invite-only, approval-gated, and the skills list
+
+A few things worth knowing rather than discovering by reading code:
+
+- **Talent profiles never reach recruiters without admin approval** — this
+  was already true before this round of changes, not something new: the
+  directory query only ever selects `status = 'published'`, and a
+  submission lands as `status = 'pending'` until someone approves it in
+  `/admin`. Nothing to build here, just confirming it does what you asked
+  for.
+- **The apply form and the thank-you page both now say this is
+  invite-only** and that an uninvited submission won't be approved. That's
+  messaging only — there's no technical gate checking "was this person
+  invited," since ProConnect has no invitation-tracking mechanism. The
+  actual gate is still a human one: whoever reviews the queue in `/admin`.
+- **"Use the email you registered with ALX" is guidance, not a technical
+  gate.** An earlier version of this enforced a domain allowlist
+  (`@alxafrica.com` only), which would have wrongly rejected anyone who
+  registered for their ALX program with a personal address like Gmail —
+  that's been removed. Right now, matching a submitted email against
+  actual program records is a manual step for whoever reviews `/admin` —
+  the moderation queue shows the submitted email plainly so it can be
+  eyeballed against your existing enrollment data. If you have a roster
+  of registered participant emails somewhere (PMMS, most likely) that
+  could be queried or synced in, that would let this become a real
+  automated check instead of a manual one — that's a genuinely separate
+  build, not something to assume is covered here.
+- **Skills are now a fixed list** (`lib/skills.ts`), not free text, on
+  both the apply form and the directory's skill filter. This was seeded
+  with a broad set based on your program areas plus the specific ones you
+  named (Problem Solving, Analytics, Product Management, and five each for
+  Data Analyst / Virtual Assistant / Graphic Designer / Entrepreneur) — it's
+  one array, easy to hand-edit, and every place that displays skills reads
+  from whatever talents actually picked, so adding or renaming an option
+  doesn't require touching anything else.
 
 ## How the pieces fit together
 

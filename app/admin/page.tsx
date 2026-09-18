@@ -23,7 +23,7 @@ export default async function AdminPage() {
     supabase
       .from("talents")
       .select(
-        "id, full_name, email, country, programs, one_liner, bio, portfolio_url, linkedin_url, headshot_path, skill_tags"
+        "id, full_name, email, country, one_liner, bio, portfolio_url, linkedin_url, headshot_path, skill_tags"
       )
       .eq("status", "pending")
       .order("created_at", { ascending: true }),

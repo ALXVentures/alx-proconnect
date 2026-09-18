@@ -2,49 +2,24 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-
-const PROGRAMS = ["FLA", "AiCE", "VA", "GD", "CC"];
+import { MultiSelectDropdown } from "@/components/MultiSelectDropdown";
+import { SKILL_OPTIONS } from "@/lib/skills";
 
 export function ApplyForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [programs, setPrograms] = useState<string[]>([]);
+  const [skills, setSkills] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [headshotName, setHeadshotName] = useState<string | null>(null);
 
-  function toggleProgram(p: string) {
-    setPrograms((prev) =>
-      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
-    );
-  }
-
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-
-    if (programs.length === 0) {
-      setError("Select at least one program.");
-      return;
-    }
-
     setSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    // skill_tags comes in as a comma-separated string — normalize before send
-    const rawTags = String(formData.get("skill_tags_raw") || "");
-    formData.set(
-      "skill_tags",
-      rawTags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean)
-        .join(",")
-    );
-    // programs is a checkbox pill group, not a native form field — append
-    // each selection as its own entry so the server can read them with
-    // formData.getAll("programs")
-    programs.forEach((p) => formData.append("programs", p));
+    formData.set("skill_tags", skills.join(","));
 
     try {
       const res = await fetch("/api/apply", { method: "POST", body: formData });
@@ -64,42 +39,45 @@ export function ApplyForm() {
       className="space-y-8"
       encType="multipart/form-data"
     >
+      <div className="bg-brass/10 border border-brass/30 rounded-md px-4 py-3.5">
+        <p className="font-mono text-[11px] uppercase tracking-wide text-brass mb-1">
+          Invite-only
+        </p>
+        <p className="text-sm text-text-ink-lo">
+          ProConnect profiles are by invitation only. If you weren't
+          specifically invited by the FLA team to submit a profile, it
+          won't be approved — reach out to your program team first if
+          you're not sure.
+        </p>
+      </div>
+
       <Fieldset legend="About you">
         <Field label="Full name" name="full_name" required autoComplete="name" />
         <Row>
-          <Field label="Email" name="email" type="email" required autoComplete="email" />
+          <div>
+            <label className="field-label" htmlFor="email">
+              Email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              placeholder="the email you used to register for your ALX program"
+              className="field-input"
+            />
+            <p className="mt-1.5 font-mono text-[11px] text-text-ink-lo">
+              Use the same email you registered with ALX — the FLA team
+              matches it against your program record to approve you.
+            </p>
+          </div>
           <Field label="Phone / WhatsApp" name="phone" autoComplete="tel" />
         </Row>
         <Row>
           <Field label="Country" name="country" required autoComplete="country-name" />
           <Field label="City" name="city" />
         </Row>
-        <div>
-          <label className="field-label">Programs</label>
-          <div className="flex flex-wrap gap-2">
-            {PROGRAMS.map((p) => {
-              const selected = programs.includes(p);
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => toggleProgram(p)}
-                  aria-pressed={selected}
-                  className={`font-mono text-xs uppercase tracking-wide px-4 py-2 rounded-full border transition-colors ${
-                    selected
-                      ? "bg-ink text-text-hi border-ink"
-                      : "bg-paper text-text-ink-lo border-paper-line hover:border-text-ink-lo"
-                  }`}
-                >
-                  {p}
-                </button>
-              );
-            })}
-          </div>
-          <p className="mt-1.5 font-mono text-[11px] text-text-ink-lo">
-            Select all that apply — you can be on more than one program.
-          </p>
-        </div>
       </Fieldset>
 
       <Fieldset legend="Your pitch">
@@ -110,17 +88,14 @@ export function ApplyForm() {
           placeholder="e.g. Frontend developer turning Figma files into fast, accessible React apps"
           maxLength={140}
         />
-        <div>
-          <label className="field-label" htmlFor="skill_tags_raw">
-            Skill tags
-          </label>
-          <input
-            id="skill_tags_raw"
-            name="skill_tags_raw"
-            className="field-input"
-            placeholder="React, TypeScript, UI Design (comma-separated)"
-          />
-        </div>
+        <MultiSelectDropdown
+          label="Skills"
+          theme="light"
+          options={SKILL_OPTIONS}
+          selected={skills}
+          onChange={setSkills}
+          placeholder="Select all that apply"
+        />
         <div>
           <label className="field-label" htmlFor="bio">
             Short bio (optional)

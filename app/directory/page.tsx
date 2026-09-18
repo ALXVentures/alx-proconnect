@@ -34,7 +34,7 @@ export default async function DirectoryPage() {
     supabase
       .from("talents")
       .select(
-        "id, full_name, country, city, programs, skill_tags, one_liner, portfolio_url, linkedin_url, headshot_path, showcase_score"
+        "id, full_name, country, city, skill_tags, one_liner, portfolio_url, linkedin_url, headshot_path, showcase_score"
       )
       .eq("status", "published")
       .order("created_at", { ascending: false }),

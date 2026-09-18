@@ -34,7 +34,7 @@ export default async function TalentProfilePage({
     supabase
       .from("talents")
       .select(
-        "id, full_name, email, phone, country, city, programs, one_liner, bio, skill_tags, portfolio_url, linkedin_url, headshot_path, showcase_score"
+        "id, full_name, email, phone, country, city, one_liner, bio, skill_tags, portfolio_url, linkedin_url, headshot_path, showcase_score"
       )
       .eq("id", id)
       .eq("status", "published")
@@ -103,7 +103,7 @@ export default async function TalentProfilePage({
           <div>
             <h1 className="font-display text-3xl">{talent.full_name}</h1>
             <p className="font-mono text-xs text-text-lo mt-1">
-              {[talent.city, talent.country].filter(Boolean).join(", ")} · {talent.programs.join(", ")}
+              {[talent.city, talent.country].filter(Boolean).join(", ")}
             </p>
           </div>
         </div>

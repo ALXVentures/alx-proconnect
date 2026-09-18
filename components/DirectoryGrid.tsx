@@ -4,13 +4,13 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ScoreMeter } from "./ScoreMeter";
+import { MultiSelectDropdown } from "./MultiSelectDropdown";
 
 export type Talent = {
   id: string;
   full_name: string;
   country: string;
   city: string | null;
-  programs: string[];
   skill_tags: string[];
   one_liner: string;
   portfolio_url: string | null;
@@ -27,7 +27,7 @@ export function DirectoryGrid({
   viewedIds: Set<string>;
 }) {
   const [query, setQuery] = useState("");
-  const [skill, setSkill] = useState("all");
+  const [skills, setSkills] = useState<string[]>([]);
 
   const allSkills = useMemo(() => {
     const s = new Set<string>();
@@ -41,8 +41,9 @@ export function DirectoryGrid({
       t.full_name.toLowerCase().includes(query.toLowerCase()) ||
       t.one_liner.toLowerCase().includes(query.toLowerCase()) ||
       t.skill_tags.some((s) => s.toLowerCase().includes(query.toLowerCase()));
-    const matchesSkill = skill === "all" || t.skill_tags.includes(skill);
-    return matchesQuery && matchesSkill;
+    const matchesSkills =
+      skills.length === 0 || skills.some((s) => t.skill_tags.includes(s));
+    return matchesQuery && matchesSkills;
   });
 
   return (
@@ -54,18 +55,15 @@ export function DirectoryGrid({
           placeholder="Search by name, skill, or pitch…"
           className="flex-1 bg-ink-2 border border-ink-line rounded-md px-4 py-2.5 text-sm focus:border-teal-hi"
         />
-        <select
-          value={skill}
-          onChange={(e) => setSkill(e.target.value)}
-          className="bg-ink-2 border border-ink-line rounded-md px-4 py-2.5 text-sm font-mono focus:border-teal-hi"
-        >
-          <option value="all">All skills</option>
-          {allSkills.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+        <div className="sm:w-64">
+          <MultiSelectDropdown
+            theme="dark"
+            options={allSkills}
+            selected={skills}
+            onChange={setSkills}
+            placeholder="Filter by skill"
+          />
+        </div>
       </div>
 
       {filtered.length === 0 ? (
@@ -103,8 +101,7 @@ function TalentCard({ talent, alreadyViewed }: { talent: Talent; alreadyViewed: 
             {talent.full_name}
           </div>
           <div className="font-mono text-[11px] text-text-lo truncate">
-            {[talent.city, talent.country].filter(Boolean).join(", ")} ·{" "}
-            {talent.programs.join(", ")}
+            {[talent.city, talent.country].filter(Boolean).join(", ")}
           </div>
         </div>
       </div>

@@ -81,7 +81,6 @@ export type PendingTalent = {
   full_name: string;
   email: string;
   country: string;
-  programs: string[];
   one_liner: string;
   bio: string | null;
   portfolio_url: string | null;
@@ -144,7 +143,7 @@ function QueueCard({ talent }: { talent: PendingTalent }) {
         <div className="min-w-0">
           <div className="font-display text-xl">{talent.full_name}</div>
           <div className="font-mono text-[11px] text-text-lo">
-            {talent.email} · {talent.country} · {talent.programs.join(", ")}
+            {talent.email} · {talent.country}
           </div>
           <p className="mt-2 text-sm text-text-lo">{talent.one_liner}</p>
           {talent.bio && <p className="mt-2 text-sm text-text-lo">{talent.bio}</p>}

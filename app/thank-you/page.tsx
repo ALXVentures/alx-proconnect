@@ -14,6 +14,10 @@ export default function ThankYouPage() {
           The FLA team checks every submission before it's published to
           recruiters. You'll hear from us once it's live.
         </p>
+        <p className="mt-3 text-sm text-text-ink-lo">
+          Remember: ProConnect is invite-only. If your profile wasn't
+          submitted following an invitation, it won't be approved.
+        </p>
         <Link
           href="/"
           className="inline-block mt-10 font-mono text-sm uppercase tracking-wide border border-text-ink px-6 py-3 rounded-md hover:bg-ink hover:text-text-hi hover:border-ink transition-colors"
