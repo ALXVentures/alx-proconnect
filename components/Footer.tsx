@@ -45,6 +45,9 @@ export function Footer({
               Request profile removal
             </Link>
           )}
+          <Link href="/admin" className={`${hoverClass} transition-colors`}>
+            Admin
+          </Link>
         </div>
       </div>
     </footer>
