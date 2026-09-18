@@ -34,7 +34,7 @@ export default function Home() {
       {/* ── Hero ───────────────────────────────────────────── */}
       <section className="max-w-6xl mx-auto w-full px-6 md:px-10 pt-16 pb-14">
         <p className="font-mono text-xs tracking-[0.2em] uppercase text-brass-hi mb-5">
-          A Portfolio Showcase initiative
+          An ALX Venture Freelancer Academy Program initiative
         </p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] max-w-3xl">
           Talent that already{" "}
