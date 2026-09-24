@@ -37,8 +37,8 @@ export default function Home() {
           An ALX Venture Freelancer Academy Program initiative
         </p>
         <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] max-w-3xl">
-          Talent that already{" "}
-          <span className="italic text-teal-hi">passed the panel.</span>
+          Top Talents Trained to Deliver{" "}
+          <span className="italic text-teal-hi">Excellent Client Work.</span>
         </h1>
         <p className="mt-6 max-w-xl text-text-lo text-base md:text-lg leading-relaxed">
           Every profile here cleared a judged pitch session against a fixed
