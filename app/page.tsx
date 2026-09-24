@@ -95,10 +95,10 @@ export default function Home() {
           <div className="relative px-6 md:px-10 py-16 flex flex-col justify-between border-t md:border-t-0 border-ink-line">
             <div>
               <span className="font-mono text-[11px] tracking-widest uppercase text-brass-hi">
-                For Showcase graduates
+                For Only Shortlisted Freelancers
               </span>
               <h2 className="font-display text-3xl md:text-[2.5rem] mt-4 leading-tight">
-                Put your work in front of employers
+                All Profile Submissions are Verified Before Getting Published
               </h2>
               <p className="mt-4 text-text-lo max-w-md">
                 Cleared the pitch panel? Submit your profile — headshot,
