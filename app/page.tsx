@@ -98,7 +98,7 @@ export default function Home() {
                 For Only Shortlisted Freelancers
               </span>
               <h2 className="font-display text-3xl md:text-[2.5rem] mt-4 leading-tight">
-                Submit your profile
+                Invited? Submit your profile
               </h2>
               <p className="mt-4 text-text-lo max-w-md">
                 All Profile Submissions are reviewed and verified before getting published
