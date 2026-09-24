@@ -4,8 +4,8 @@ import { BrandMark } from "@/components/BrandMark";
 import { Footer } from "@/components/Footer";
 
 const STATS = [
-  { value: "250+", label: "Recruiters engaged" },
-  { value: "4.6", label: "Min. panel score to publish" },
+  { value: "5+", label: "Recruiters engaged" },
+  { value: "4.0", label: "Out of 5 Min. panel score" },
   { value: "0", label: "Cost to recruiters" },
 ];
 
