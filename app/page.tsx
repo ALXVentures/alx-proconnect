@@ -98,12 +98,11 @@ export default function Home() {
                 For Only Shortlisted Freelancers
               </span>
               <h2 className="font-display text-3xl md:text-[2.5rem] mt-4 leading-tight">
-                All Profile Submissions are Verified Before Getting Published
+                Submit your profile
               </h2>
               <p className="mt-4 text-text-lo max-w-md">
-                Cleared the pitch panel? Submit your profile — headshot,
-                portfolio, and a one-line pitch — for the FLA team to review
-                and publish.
+                All Profile Submissions are reviewed and verified before getting published
+                Cleared the pitch panel? Only shortlisted talents are approved. 
               </p>
             </div>
             <Link
