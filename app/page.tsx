@@ -47,7 +47,7 @@ export default function Home() {
         </p>
 
         <div className="mt-10 max-w-sm">
-          <ScoreMeter value={4.6} />
+          <ScoreMeter value={4.0} />
         </div>
 
         <div className="mt-10 flex flex-wrap gap-x-10 gap-y-3">
